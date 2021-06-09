@@ -100,6 +100,7 @@ input[type=date] {
     margin-top: auto;
     align-self: flex-end;
     cursor: pointer;
+    background-color: #F5F1FF;
 }
 
 .btn-submit:hover{
