@@ -1,8 +1,12 @@
 const UNCOMPLETED_LIST_TODO_ID = "todos";
 const COMPLETED_LIST_TODO_ID = "completed-todos";
 
-function makeTodo(data /* string */, timestamp /* string */, isCompleted /* boolean */) {
-
+function makeTodo(
+    id,
+    data /* string */,
+    timestamp /* string */,
+    isCompleted /* boolean */
+) {
     const textTitle = document.createElement("h2");
     textTitle.innerText = data;
 
@@ -10,46 +14,46 @@ function makeTodo(data /* string */, timestamp /* string */, isCompleted /* bool
     textTimestamp.innerText = timestamp;
 
     const textContainer = document.createElement("div");
-    textContainer.classList.add("inner")
+    textContainer.classList.add("inner");
     textContainer.append(textTitle, textTimestamp);
 
     const container = document.createElement("div");
-    container.classList.add("item", "shadow")
+    container.classList.add("item", "shadow");
     container.append(textContainer);
-    
-    if(isCompleted){
-        container.append(
-            createUndoButton(),
-            createTrashButton()
-        );
+
+    if (isCompleted) {
+        container.append(createUndoButton(), createTrashButton());
     } else {
-        container.append(
-            createCheckButton()
-        );
+        container.append(createCheckButton());
     }
+
+    container.dbID = id;
 
     return container;
 }
 
 function createUndoButton() {
-    return createButton("undo-button", function(event){
+    return createButton("undo-button", function (event) {
         undoTaskFromCompleted(event.target.parentElement);
     });
 }
 
 function createTrashButton() {
-    return createButton("trash-button", function(event){
+    return createButton("trash-button", function (event) {
         removeTaskFromCompleted(event.target.parentElement);
     });
 }
 
 function createCheckButton() {
-    return createButton("check-button", function(event){
+    return createButton("check-button", function (event) {
         addTaskToCompleted(event.target.parentElement);
     });
 }
 
-function createButton(buttonTypeClass /* string */, eventListener /* callback function */) {
+function createButton(
+    buttonTypeClass /* string */,
+    eventListener /* callback function */
+) {
     const button = document.createElement("button");
     button.classList.add(buttonTypeClass);
     button.addEventListener("click", function (event) {
@@ -58,36 +62,63 @@ function createButton(buttonTypeClass /* string */, eventListener /* callback fu
     return button;
 }
 
-
 function addTodo() {
-    const uncompletedTODOList = document.getElementById(UNCOMPLETED_LIST_TODO_ID);
+    const uncompletedTODOList = document.getElementById(
+        UNCOMPLETED_LIST_TODO_ID
+    );
     const textTodo = document.getElementById("title").value;
     const timestamp = document.getElementById("date").value;
-    const todo = makeTodo(textTodo, timestamp, false);
+    const dbID = addData(textTodo, timestamp, false);
+
+    const todo = makeTodo(dbID, textTodo, timestamp, false);
 
     uncompletedTODOList.append(todo);
 }
+
+function addToDoWithData(id, data, timestamp) {
+    const uncompletedTODOList = document.getElementById(
+        UNCOMPLETED_LIST_TODO_ID
+    );
+    const todo = makeTodo(id, data, timestamp, false);
+
+    uncompletedTODOList.append(todo);
+}
+
+function addTaskToCompletedWithData(id, data, timestamp) {
+    const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID);
+    const todo = makeTodo(id, data, timestamp, true);
+
+    listCompleted.append(todo);
+}
+
 function addTaskToCompleted(taskElement /* HTMLELement */) {
     const listCompleted = document.getElementById(COMPLETED_LIST_TODO_ID);
     const taskTitle = taskElement.querySelector(".inner > h2").innerText;
     const taskTimestamp = taskElement.querySelector(".inner > p").innerText;
 
-    const newTodo = makeTodo(taskTitle, taskTimestamp, true);
+    const dbID = taskElement.dbID;
+    updateStatus(dbID, true);
+
+    const newTodo = makeTodo(dbID, taskTitle, taskTimestamp, true);
 
     listCompleted.append(newTodo);
     taskElement.remove();
 }
 
 function removeTaskFromCompleted(taskElement /* HTMLELement */) {
+    deleteData(taskElement.dbID);
     taskElement.remove();
 }
 
-function undoTaskFromCompleted(taskElement /* HTMLELement */){
+function undoTaskFromCompleted(taskElement /* HTMLELement */) {
     const listUncompleted = document.getElementById(UNCOMPLETED_LIST_TODO_ID);
     const taskTitle = taskElement.querySelector(".inner > h2").innerText;
     const taskTimestamp = taskElement.querySelector(".inner > p").innerText;
 
-    const newTodo = makeTodo(taskTitle, taskTimestamp, false);
+    const dbID = taskElement.dbID;
+    updateStatus(dbID, false);
+
+    const newTodo = makeTodo(dbID, taskTitle, taskTimestamp, false);
 
     listUncompleted.append(newTodo);
     taskElement.remove();
